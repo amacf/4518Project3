@@ -45,19 +45,6 @@ public class ActivityRecognizedService extends IntentService {
                     }
                     break;
                 }
-                case DetectedActivity.ON_BICYCLE: {
-                    Log.e( "ActivityRecogition", "On Bicycle: " + activity.getConfidence() );
-                    if (activity.getConfidence() >= 75) {
-                        Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
-                        sendActivity.putExtra("activityType", "biking");
-                        LocalBroadcastManager.getInstance(this).sendBroadcast(sendActivity);
-                    }
-                    break;
-                }
-                case DetectedActivity.ON_FOOT: {
-                    Log.e( "ActivityRecogition", "On Foot: " + activity.getConfidence() );
-                    break;
-                }
                 case DetectedActivity.RUNNING: {
                     Log.e( "ActivityRecogition", "Running: " + activity.getConfidence() );
                     if (activity.getConfidence() >= 75) {
@@ -76,12 +63,8 @@ public class ActivityRecognizedService extends IntentService {
                     }
                     break;
                 }
-                case DetectedActivity.TILTING: {
-                    Log.e( "ActivityRecogition", "Tilting: " + activity.getConfidence() );
-                    break;
-                }
                 case DetectedActivity.WALKING: {
-                    Log.e( "ActivityRecogition", "Walking: " + activity.getConfidence() );
+                    Log.e("ActivityRecogition", "Walking: " + activity.getConfidence());
                     if (activity.getConfidence() >= 75) {
                         Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
                         sendActivity.putExtra("activityType", "walking");
@@ -89,10 +72,8 @@ public class ActivityRecognizedService extends IntentService {
                     }
                     break;
                 }
-                case DetectedActivity.UNKNOWN: {
-                    Log.e( "ActivityRecogition", "Unknown: " + activity.getConfidence() );
+                default:
                     break;
-                }
             }
         }
     }

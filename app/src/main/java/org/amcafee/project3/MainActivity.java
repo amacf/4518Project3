@@ -13,7 +13,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -30,20 +32,44 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
+
 public class MainActivity extends FragmentActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback, LocationListener {
 
     private GoogleMap mMap;
+    private Activity lastActivity = null;
     public GoogleApiClient mApiClient;
     private Marker posMarker;
     public static final String RECEIVE_ACT = "org.amcafee.project3";
     LocalBroadcastManager mbManager;
     private TextView mCurrentActivityMessage;
+    private ImageView mImgView;
     private BroadcastReceiver mbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(RECEIVE_ACT)) {
                 String mCurrentActivity = intent.getStringExtra("activityType");
                 mCurrentActivityMessage.setText("You are currently " + mCurrentActivity);
+                Activity newActivity = new Activity();
+                newActivity.mType = mCurrentActivity;
+                newActivity.mDate = new Date();
+                if(lastActivity != null){
+                    TimeUnit timeUnit = TimeUnit.MINUTES;
+                    Toast mToast = Toast.makeText(context,lastActivity.mType + ": " + timeUnit.convert(newActivity.mDate.getTime() - lastActivity.mDate.getTime(), TimeUnit.SECONDS), Toast.LENGTH_LONG );
+                    mToast.show();
+                }
+                lastActivity = newActivity;
+                if(mCurrentActivity=="still"){
+                    mImgView.setImageResource(R.drawable.still);
+                } else if(mCurrentActivity=="running"){
+                    mImgView.setImageResource(R.drawable.running);
+                } else if(mCurrentActivity=="walking"){
+                    mImgView.setImageResource(R.drawable.walking);
+                } else if(mCurrentActivity=="driving"){
+                    mImgView.setImageResource(R.drawable.in_vehicle);
+                }
             }
         }
     };
@@ -73,6 +99,7 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         mbManager.registerReceiver(mbReceiver, mFilter);
 
         mCurrentActivityMessage = (TextView) findViewById(R.id.mesView);
+        mImgView = (ImageView) findViewById(R.id.imgView);
     }
 
     @Override
