@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.location.ActivityRecognitionResult;
@@ -37,10 +38,20 @@ public class ActivityRecognizedService extends IntentService {
             switch( activity.getType() ) {
                 case DetectedActivity.IN_VEHICLE: {
                     Log.e( "ActivityRecogition", "In Vehicle: " + activity.getConfidence() );
+                    if (activity.getConfidence() >= 75) {
+                        Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
+                        sendActivity.putExtra("activityType", "driving");
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(sendActivity);
+                    }
                     break;
                 }
                 case DetectedActivity.ON_BICYCLE: {
                     Log.e( "ActivityRecogition", "On Bicycle: " + activity.getConfidence() );
+                    if (activity.getConfidence() >= 75) {
+                        Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
+                        sendActivity.putExtra("activityType", "biking");
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(sendActivity);
+                    }
                     break;
                 }
                 case DetectedActivity.ON_FOOT: {
@@ -49,10 +60,20 @@ public class ActivityRecognizedService extends IntentService {
                 }
                 case DetectedActivity.RUNNING: {
                     Log.e( "ActivityRecogition", "Running: " + activity.getConfidence() );
+                    if (activity.getConfidence() >= 75) {
+                        Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
+                        sendActivity.putExtra("activityType", "running");
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(sendActivity);
+                    }
                     break;
                 }
                 case DetectedActivity.STILL: {
                     Log.e( "ActivityRecogition", "Still: " + activity.getConfidence() );
+                    if (activity.getConfidence() >= 75) {
+                        Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
+                        sendActivity.putExtra("activityType", "still");
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(sendActivity);
+                    }
                     break;
                 }
                 case DetectedActivity.TILTING: {
@@ -61,12 +82,10 @@ public class ActivityRecognizedService extends IntentService {
                 }
                 case DetectedActivity.WALKING: {
                     Log.e( "ActivityRecogition", "Walking: " + activity.getConfidence() );
-                    if( activity.getConfidence() >= 75 ) {
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-                        builder.setContentText( "Are you walking?" );
-                        builder.setSmallIcon( R.mipmap.ic_launcher );
-                        builder.setContentTitle( getString( R.string.app_name ) );
-                        NotificationManagerCompat.from(this).notify(0, builder.build());
+                    if (activity.getConfidence() >= 75) {
+                        Intent sendActivity = new Intent(MainActivity.RECEIVE_ACT);
+                        sendActivity.putExtra("activityType", "walking");
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(sendActivity);
                     }
                     break;
                 }

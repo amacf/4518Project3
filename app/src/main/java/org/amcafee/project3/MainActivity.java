@@ -1,7 +1,10 @@
 package org.amcafee.project3;
 
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
@@ -9,6 +12,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -30,7 +35,18 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
     private GoogleMap mMap;
     public GoogleApiClient mApiClient;
     private Marker posMarker;
-    ActivityLab activityLab = ActivityLab.get(this);
+    public static final String RECEIVE_ACT = "org.amcafee.project3";
+    LocalBroadcastManager mbManager;
+    private TextView mCurrentActivityMessage;
+    private BroadcastReceiver mbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(RECEIVE_ACT)) {
+                String mCurrentActivity = intent.getStringExtra("activityType");
+                mCurrentActivityMessage.setText("You are currently " + mCurrentActivity);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +66,19 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mbManager = LocalBroadcastManager.getInstance(this);
+        IntentFilter mFilter = new IntentFilter();
+        mFilter.addAction(RECEIVE_ACT);
+        mbManager.registerReceiver(mbReceiver, mFilter);
+
+        mCurrentActivityMessage = (TextView) findViewById(R.id.mesView);
+    }
+
+    @Override
+    protected void  onDestroy() {
+        super.onDestroy();
+        mbManager.unregisterReceiver(mbReceiver);
     }
 
 
