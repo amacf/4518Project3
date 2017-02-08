@@ -30,6 +30,7 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
     private GoogleMap mMap;
     public GoogleApiClient mApiClient;
     private Marker posMarker;
+    ActivityLab activityLab = ActivityLab.get(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
