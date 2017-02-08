@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -46,6 +47,7 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
     LocalBroadcastManager mbManager;
     private TextView mCurrentActivityMessage;
     private ImageView mImgView;
+    private MediaPlayer mWalkingMusic = null;
     private BroadcastReceiver mbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -56,12 +58,25 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
                 newActivity.mDate = new Date();
                 if(mCurrentActivity=="still"){
                     mImgView.setImageResource(R.drawable.still);
+                    if(mWalkingMusic != null) {
+                        mWalkingMusic.release();
+                        mWalkingMusic = null;
+                    }
                 } else if(mCurrentActivity=="running"){
+                    mWalkingMusic = MediaPlayer.create(getApplicationContext(), R.raw.beat_02);
+                    mWalkingMusic.start();
                     mImgView.setImageResource(R.drawable.running);
                 } else if(mCurrentActivity=="walking"){
+                    mWalkingMusic = MediaPlayer.create(getApplicationContext(), R.raw.beat_02);
+
+                    mWalkingMusic.start();
                     mImgView.setImageResource(R.drawable.walking);
                 } else if(mCurrentActivity=="driving"){
                     mImgView.setImageResource(R.drawable.in_vehicle);
+                    if(mWalkingMusic != null) {
+                        mWalkingMusic.release();
+                        mWalkingMusic = null;
+                    }
                 }
                 mCurrentActivityMessage.setText("You are currently " + mCurrentActivity);
                 if(lastActivity != null && lastActivity.mType == newActivity.mType)
