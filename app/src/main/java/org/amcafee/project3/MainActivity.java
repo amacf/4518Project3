@@ -63,13 +63,18 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
                         mWalkingMusic = null;
                     }
                 } else if(mCurrentActivity=="running"){
-                    mWalkingMusic = MediaPlayer.create(getApplicationContext(), R.raw.beat_02);
-                    mWalkingMusic.start();
+                    if(lastActivity.mType != "running" && lastActivity.mType != "walking") {
+                        mWalkingMusic = MediaPlayer.create(getApplicationContext(), R.raw.beat_02);
+                        mWalkingMusic.setLooping(true);
+                        mWalkingMusic.start();
+                    }
                     mImgView.setImageResource(R.drawable.running);
                 } else if(mCurrentActivity=="walking"){
-                    mWalkingMusic = MediaPlayer.create(getApplicationContext(), R.raw.beat_02);
-
-                    mWalkingMusic.start();
+                    if(lastActivity.mType != "running" && lastActivity.mType != "walking") {
+                        mWalkingMusic = MediaPlayer.create(getApplicationContext(), R.raw.beat_02);
+                        mWalkingMusic.setLooping(true);
+                        mWalkingMusic.start();
+                    }
                     mImgView.setImageResource(R.drawable.walking);
                 } else if(mCurrentActivity=="driving"){
                     mImgView.setImageResource(R.drawable.in_vehicle);
@@ -97,6 +102,28 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        mCurrentActivityMessage = (TextView) findViewById(R.id.mesView);
+        mImgView = (ImageView) findViewById(R.id.imgView);
+
+
+        Activity newActivity = new Activity();
+        newActivity.mType = "still";
+        newActivity.mDate = new Date();
+
+        if(lastActivity == null)
+            lastActivity = newActivity;
+
+        mCurrentActivityMessage.setText("You are currently " + lastActivity.mType);
+        if(lastActivity.mType=="still"){
+            mImgView.setImageResource(R.drawable.still);
+        } else if(lastActivity.mType=="running"){
+            mImgView.setImageResource(R.drawable.running);
+        } else if(lastActivity.mType=="walking"){
+            mImgView.setImageResource(R.drawable.walking);
+        } else if(lastActivity.mType=="driving") {
+            mImgView.setImageResource(R.drawable.in_vehicle);
+        }
+
 
         mApiClient = new GoogleApiClient.Builder(this)
                 .addApi(ActivityRecognition.API)
@@ -116,15 +143,16 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         IntentFilter mFilter = new IntentFilter();
         mFilter.addAction(RECEIVE_ACT);
         mbManager.registerReceiver(mbReceiver, mFilter);
-
-        mCurrentActivityMessage = (TextView) findViewById(R.id.mesView);
-        mImgView = (ImageView) findViewById(R.id.imgView);
     }
 
     @Override
     protected void  onDestroy() {
         super.onDestroy();
         mbManager.unregisterReceiver(mbReceiver);
+        if(mWalkingMusic != null) {
+            mWalkingMusic.release();
+            mWalkingMusic = null;
+        }
     }
 
 
@@ -165,10 +193,25 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                LocationRequest mLocationRequest = LocationRequest.create()
+                        .setInterval(5000)
+                        .setFastestInterval(3000)
+                        .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+                LocationServices.FusedLocationApi.requestLocationUpdates(
+                        mApiClient, mLocationRequest, this);
+            }
+        }
+    }
+
+    @Override
     public void onConnected(@Nullable Bundle bundle) {
         Intent intent = new Intent( this, ActivityRecognizedService.class );
         PendingIntent pendingIntent = PendingIntent.getService( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
-        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates( mApiClient, 3000, pendingIntent );
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates( mApiClient, 500, pendingIntent );
 
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
