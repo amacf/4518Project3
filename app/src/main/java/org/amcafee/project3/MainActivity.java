@@ -51,16 +51,9 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(RECEIVE_ACT)) {
                 String mCurrentActivity = intent.getStringExtra("activityType");
-                mCurrentActivityMessage.setText("You are currently " + mCurrentActivity);
                 Activity newActivity = new Activity();
                 newActivity.mType = mCurrentActivity;
                 newActivity.mDate = new Date();
-                if(lastActivity != null){
-                    TimeUnit timeUnit = TimeUnit.MINUTES;
-                    Toast mToast = Toast.makeText(context,lastActivity.mType + ": " + timeUnit.convert(newActivity.mDate.getTime() - lastActivity.mDate.getTime(), TimeUnit.SECONDS), Toast.LENGTH_LONG );
-                    mToast.show();
-                }
-                lastActivity = newActivity;
                 if(mCurrentActivity=="still"){
                     mImgView.setImageResource(R.drawable.still);
                 } else if(mCurrentActivity=="running"){
@@ -70,6 +63,17 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
                 } else if(mCurrentActivity=="driving"){
                     mImgView.setImageResource(R.drawable.in_vehicle);
                 }
+                mCurrentActivityMessage.setText("You are currently " + mCurrentActivity);
+                if(lastActivity != null && lastActivity.mType == newActivity.mType)
+                    return;
+                ActivityLab activityLab = ActivityLab.get(getApplicationContext());
+                activityLab.addActivity(newActivity);
+                if(lastActivity != null){
+                    String message = "You have been " + lastActivity.mType + " for " + (newActivity.mDate.getTime() - lastActivity.mDate.getTime())/1000 + " seconds";
+                    Toast mToast = Toast.makeText(context, message , Toast.LENGTH_LONG );
+                    mToast.show();
+                }
+                lastActivity = newActivity;
             }
         }
     };
@@ -141,7 +145,7 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
             markerOptions.title("Current Position");
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
             mMap.addMarker(markerOptions);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,mMap.getMaxZoomLevel()-4));
         }
     }
 
@@ -181,7 +185,7 @@ public class MainActivity extends FragmentActivity implements GoogleApiClient.Co
         markerOptions.title("Current Position");
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         mMap.addMarker(markerOptions);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,mMap.getMaxZoomLevel()-4));
     }
 
 }
